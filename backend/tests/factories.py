@@ -59,7 +59,8 @@ async def make_semester(db: AsyncSession, **kw: Any) -> Semester:
 async def make_course(db: AsyncSession, **kw: Any) -> Course:
     await make_semester(db)
     n = next(_counter)
-    course = Course(code=f"UJI{n}", name=f"Mata Kuliah {n}", credits=3, is_sample=True, **kw)
+    values: dict[str, Any] = {"credits": 3, "is_sample": True} | kw
+    course = Course(code=f"UJI{n}", name=f"Mata Kuliah {n}", **values)
     db.add(course)
     await db.commit()
     return course

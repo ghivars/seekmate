@@ -136,6 +136,44 @@ async def list_recommended_lobbies(
     return svc.sort_by_match(found)[:limit]
 
 
+@router.get("/lobbies/discover")
+async def discover_lobbies(
+    user: CurrentUser,
+    db: Db,
+    q: Annotated[str, Query(max_length=80)] = "",
+    faculty: Annotated[str, Query(max_length=120)] = "",
+    has_slot: bool = False,
+    sort: Literal["match", "newest", "popular"] = "match",
+    limit: Annotated[int, Query(ge=1, le=60)] = 12,
+) -> list[LobbyOut]:
+    """Public lobbies of the active semester across all courses."""
+    semester = await svc.active_semester(db)
+    where: list[ColumnElement[bool]] = [
+        Lobby.semester_id == semester.id,
+        Lobby.status.in_(svc.ACTIVE),
+        Lobby.visibility == LobbyVisibility.public,
+    ]
+    if has_slot:
+        where.append(Lobby.status == LobbyStatus.open)
+    term = q.strip().replace("%", "").replace("_", "")
+    if term or faculty:
+        course = select(Course.id)
+        if term:
+            pattern = f"%{term}%"
+            course = course.where(or_(Course.name.ilike(pattern), Course.code.ilike(pattern)))
+        if faculty:
+            course = course.where(Course.faculty_or_dept == faculty)
+        title = Lobby.title.ilike(f"%{term}%") if term else None
+        in_course = Lobby.course_id.in_(course)
+        where.append(or_(in_course, title) if title is not None and not faculty else in_course)
+    found = await svc.list_lobbies(db, user, *where)
+    if sort == "match":
+        found = svc.sort_by_match(found)
+    elif sort == "popular":
+        found = sorted(found, key=lambda lobby: -lobby.member_count)
+    return found[:limit]
+
+
 @router.get("/lobbies/{lobby_id}")
 async def get_lobby(lobby_id: uuid.UUID, user: CurrentUser, db: Db) -> LobbyOut:
     lobby = await svc.get_lobby(db, user.id, lobby_id)

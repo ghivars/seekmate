@@ -59,6 +59,17 @@ async def _courses(
             .group_by(Lobby.course_id)
         )
     }
+    planners = {
+        row[0]: row[1]
+        for row in await db.execute(
+            select(UserPlannedCourse.course_id, func.count())
+            .where(
+                UserPlannedCourse.course_id.in_(ids),
+                UserPlannedCourse.semester_id == semester.id,
+            )
+            .group_by(UserPlannedCourse.course_id)
+        )
+    }
     unread = await unread_counts(db, user.id, await blocked_ids(db, user.id))
     lobby_course = {
         row[0]: row[1]
@@ -80,6 +91,7 @@ async def _courses(
             is_sample=course.is_sample,
             is_planned=is_planned,
             lobby_count=counts.get(course.id, 0),
+            planner_count=planners.get(course.id, 0),
             unread_count=per_course.get(course.id, 0),
         )
         for course, is_planned in rows

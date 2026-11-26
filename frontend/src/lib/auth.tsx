@@ -12,6 +12,7 @@ interface AuthValue {
   me: Me | null;
   setMe: (me: Me) => void;
   login: (email: string, password: string) => Promise<Me>;
+  acceptToken: (token: string) => Promise<Me>;
   logout: () => Promise<void>;
   retry: () => void;
 }
@@ -59,6 +60,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login: async (email, password) => {
         const token = await call(api.POST("/api/v1/auth/login", { body: { email, password } }));
         setAccessToken(token.access_token);
+        queryClient.clear();
+        const next = await call(api.GET("/api/v1/auth/me"));
+        setMe(next);
+        return next;
+      },
+      acceptToken: async (token) => {
+        setAccessToken(token);
         queryClient.clear();
         const next = await call(api.GET("/api/v1/auth/me"));
         setMe(next);

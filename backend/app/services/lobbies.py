@@ -25,7 +25,7 @@ from app.models import (
     UserPlannedCourse,
     UserPreferences,
 )
-from app.schemas_lobby import LobbyOut, UserBrief
+from app.schemas_lobby import CreatorBrief, LobbyOut, UserBrief
 from app.services.blocks import blocked_ids, lobby_visible_to
 from app.services.notifications import notify
 
@@ -179,6 +179,7 @@ async def to_out(db: AsyncSession, user: User, lobbies: Sequence[Lobby]) -> list
                 course_id=lobby.course_id,
                 course_code=lobby.course.code,
                 course_name=lobby.course.name,
+                course_credits=lobby.course.credits,
                 title=lobby.title,
                 description=lobby.description,
                 study_goal=lobby.study_goal,
@@ -190,7 +191,7 @@ async def to_out(db: AsyncSession, user: User, lobbies: Sequence[Lobby]) -> list
                 status=lobby.status,
                 created_at=lobby.created_at,
                 expires_at=lobby.expires_at,
-                creator=UserBrief.model_validate(lobby.creator),
+                creator=CreatorBrief.model_validate(lobby.creator),
                 members_preview=previews[lobby.id],
                 is_member=member is not None,
                 my_role=member.role if member else None,

@@ -4,8 +4,9 @@ import { cn } from "@/lib/cn";
 type Variant = "primary" | "soft" | "ghost" | "danger";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-primary text-on-primary hover:brightness-110",
-  soft: "bg-raised text-fg border border-line hover:brightness-110 dark:hover:brightness-125",
+  primary:
+    "bg-primary text-on-primary shadow-[0_8px_24px_-10px_var(--glow)] hover:brightness-110 hover:shadow-[0_10px_28px_-8px_var(--glow)]",
+  soft: "bg-raised text-fg border border-line hover:border-muted",
   ghost: "text-fg hover:bg-raised",
   danger: "bg-danger-fill text-on-danger hover:brightness-110",
 };
@@ -18,8 +19,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function buttonClass(variant: Variant = "primary", block = false) {
   return cn(
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-3.5 text-[15px] font-semibold whitespace-nowrap",
-    "ease-ui transition-[filter,background-color,opacity] disabled:opacity-55 sm:min-h-10",
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-[15px] font-semibold whitespace-nowrap",
+    "ease-ui transition-[filter,background-color,border-color,box-shadow,translate] active:translate-y-px disabled:opacity-55 sm:min-h-10",
     VARIANTS[variant],
     block && "w-full",
   );

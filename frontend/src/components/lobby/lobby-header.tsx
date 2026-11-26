@@ -25,7 +25,7 @@ export function LobbyHeader({ lobby, onReport, onLeave, onClose, onShare }: Prop
   const unread = useUnreadNotifications();
   const active = lobby.status === "open" || lobby.status === "full";
   return (
-    <header className="flex h-13 shrink-0 items-center gap-1 border-b border-line px-1 sm:gap-2 sm:px-3">
+    <header className="flex h-15 shrink-0 items-center gap-1 border-b border-line px-1 sm:gap-2 sm:px-3">
       <MenuButton />
       <Hash size={18} aria-hidden className="shrink-0 text-muted max-sm:hidden" />
       <div className="flex min-w-0 flex-1 items-baseline gap-3">

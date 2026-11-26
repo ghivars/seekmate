@@ -11,7 +11,7 @@
           "auth"
         ],
         "summary": "Register",
-        "description": "Always 202: the response never reveals whether an address is registered.",
+        "description": "With verification on, always 202 and never reveals whether an address exists.\n\nWith verification off the account is signed in at once; an existing address is a 409\n(there is no mailbox to send a hint to, and taking over accounts must stay impossible).",
         "operationId": "register",
         "requestBody": {
           "content": {
@@ -29,7 +29,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Ok"
+                  "$ref": "#/components/schemas/RegisterOut"
                 }
               }
             }
@@ -899,6 +899,108 @@
                     "$ref": "#/components/schemas/LobbyOut"
                   },
                   "title": "Response List Recommended Lobbies"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lobbies/discover": {
+      "get": {
+        "tags": [
+          "lobbies"
+        ],
+        "summary": "Discover Lobbies",
+        "description": "Public lobbies of the active semester across all courses.",
+        "operationId": "discover_lobbies",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "faculty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": "",
+              "title": "Faculty"
+            }
+          },
+          {
+            "name": "has_slot",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Has Slot"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "match",
+                "newest",
+                "popular"
+              ],
+              "type": "string",
+              "default": "match",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 60,
+              "minimum": 1,
+              "default": 12,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LobbyOut"
+                  },
+                  "title": "Response Discover Lobbies"
                 }
               }
             }
@@ -2378,6 +2480,79 @@
         }
       }
     },
+    "/api/v1/krs/status": {
+      "get": {
+        "tags": [
+          "krs"
+        ],
+        "summary": "Krs Status",
+        "operationId": "krs_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KrsStatus"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/krs/analyze": {
+      "post": {
+        "tags": [
+          "krs"
+        ],
+        "summary": "Analyze Krs",
+        "description": "Analyse the user's planned courses for the active semester.",
+        "operationId": "analyze_krs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KrsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KrsAnalysis"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -2542,6 +2717,49 @@
         ],
         "title": "ConnectionStatus"
       },
+      "CourseAdvice": {
+        "properties": {
+          "course_id": {
+            "type": "string",
+            "title": "Course Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "credits": {
+            "type": "integer",
+            "title": "Credits"
+          },
+          "lobby_count": {
+            "type": "integer",
+            "title": "Lobby Count"
+          },
+          "planner_count": {
+            "type": "integer",
+            "title": "Planner Count"
+          },
+          "tip": {
+            "type": "string",
+            "title": "Tip"
+          }
+        },
+        "type": "object",
+        "required": [
+          "course_id",
+          "code",
+          "name",
+          "credits",
+          "lobby_count",
+          "planner_count",
+          "tip"
+        ],
+        "title": "CourseAdvice"
+      },
       "CourseOut": {
         "properties": {
           "id": {
@@ -2577,6 +2795,10 @@
             "type": "integer",
             "title": "Lobby Count"
           },
+          "planner_count": {
+            "type": "integer",
+            "title": "Planner Count"
+          },
           "unread_count": {
             "type": "integer",
             "title": "Unread Count"
@@ -2592,9 +2814,46 @@
           "is_sample",
           "is_planned",
           "lobby_count",
+          "planner_count",
           "unread_count"
         ],
         "title": "CourseOut"
+      },
+      "CreatorBrief": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "major": {
+            "type": "string",
+            "title": "Major"
+          },
+          "cohort_year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cohort Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "display_name",
+          "major",
+          "cohort_year"
+        ],
+        "title": "CreatorBrief"
       },
       "EmailIn": {
         "properties": {
@@ -2653,6 +2912,148 @@
         },
         "type": "object",
         "title": "JoinIn"
+      },
+      "KrsAnalysis": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "ai",
+              "rules"
+            ],
+            "title": "Source"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "total_credits": {
+            "type": "integer",
+            "title": "Total Credits"
+          },
+          "target_credits": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Credits"
+          },
+          "load": {
+            "type": "string",
+            "enum": [
+              "ringan",
+              "seimbang",
+              "berat",
+              "sangat_berat"
+            ],
+            "title": "Load"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "courses": {
+            "items": {
+              "$ref": "#/components/schemas/CourseAdvice"
+            },
+            "type": "array",
+            "title": "Courses"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "default": "Saran ini bukan pengganti dosen wali atau aturan KRS kampusmu. Cek lagi jadwal resmi dan prasyarat sebelum mengisi KRS."
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "model",
+          "total_credits",
+          "target_credits",
+          "load",
+          "summary",
+          "courses",
+          "suggestions",
+          "warnings"
+        ],
+        "title": "KrsAnalysis"
+      },
+      "KrsRequest": {
+        "properties": {
+          "target_credits": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 30.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Credits"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 0,
+            "title": "Notes",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "KrsRequest"
+      },
+      "KrsStatus": {
+        "properties": {
+          "ai_enabled": {
+            "type": "boolean",
+            "title": "Ai Enabled"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ai_enabled",
+          "model"
+        ],
+        "title": "KrsStatus"
       },
       "Language": {
         "type": "string",
@@ -2724,6 +3125,10 @@
             "type": "string",
             "title": "Course Name"
           },
+          "course_credits": {
+            "type": "integer",
+            "title": "Course Credits"
+          },
           "title": {
             "type": "string",
             "title": "Title"
@@ -2766,7 +3171,7 @@
             "title": "Expires At"
           },
           "creator": {
-            "$ref": "#/components/schemas/UserBrief"
+            "$ref": "#/components/schemas/CreatorBrief"
           },
           "members_preview": {
             "items": {
@@ -2826,6 +3231,7 @@
           "course_id",
           "course_code",
           "course_name",
+          "course_credits",
           "title",
           "description",
           "study_goal",
@@ -3642,6 +4048,42 @@
           "display_name"
         ],
         "title": "RegisterIn"
+      },
+      "RegisterOut": {
+        "properties": {
+          "signed_in": {
+            "type": "boolean",
+            "title": "Signed In"
+          },
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "expires_in": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires In"
+          }
+        },
+        "type": "object",
+        "required": [
+          "signed_in"
+        ],
+        "title": "RegisterOut",
+        "description": "`signed_in` is true when email verification is switched off."
       },
       "ReportIn": {
         "properties": {

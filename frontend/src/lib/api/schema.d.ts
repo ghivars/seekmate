@@ -15,7 +15,10 @@ export interface paths {
         put?: never;
         /**
          * Register
-         * @description Always 202: the response never reveals whether an address is registered.
+         * @description With verification on, always 202 and never reveals whether an address exists.
+         *
+         *     With verification off the account is signed in at once; an existing address is a 409
+         *     (there is no mailbox to send a hint to, and taking over accounts must stay impossible).
          */
         post: operations["register"];
         delete?: never;
@@ -294,6 +297,26 @@ export interface paths {
         };
         /** List Recommended Lobbies */
         get: operations["list_recommended_lobbies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lobbies/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Discover Lobbies
+         * @description Public lobbies of the active semester across all courses.
+         */
+        get: operations["discover_lobbies"];
         put?: never;
         post?: never;
         delete?: never;
@@ -738,6 +761,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/krs/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Krs Status */
+        get: operations["krs_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/krs/analyze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Analyze Krs
+         * @description Analyse the user's planned courses for the active semester.
+         */
+        post: operations["analyze_krs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -817,6 +877,23 @@ export interface components {
          * @enum {string}
          */
         ConnectionStatus: "pending" | "accepted" | "declined";
+        /** CourseAdvice */
+        CourseAdvice: {
+            /** Course Id */
+            course_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Credits */
+            credits: number;
+            /** Lobby Count */
+            lobby_count: number;
+            /** Planner Count */
+            planner_count: number;
+            /** Tip */
+            tip: string;
+        };
         /** CourseOut */
         CourseOut: {
             /**
@@ -838,8 +915,24 @@ export interface components {
             is_planned: boolean;
             /** Lobby Count */
             lobby_count: number;
+            /** Planner Count */
+            planner_count: number;
             /** Unread Count */
             unread_count: number;
+        };
+        /** CreatorBrief */
+        CreatorBrief: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Display Name */
+            display_name: string;
+            /** Major */
+            major: string;
+            /** Cohort Year */
+            cohort_year: number | null;
         };
         /** EmailIn */
         EmailIn: {
@@ -868,6 +961,55 @@ export interface components {
              * @default
              */
             intro: string;
+        };
+        /** KrsAnalysis */
+        KrsAnalysis: {
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "ai" | "rules";
+            /** Model */
+            model: string | null;
+            /** Total Credits */
+            total_credits: number;
+            /** Target Credits */
+            target_credits: number | null;
+            /**
+             * Load
+             * @enum {string}
+             */
+            load: "ringan" | "seimbang" | "berat" | "sangat_berat";
+            /** Summary */
+            summary: string;
+            /** Courses */
+            courses: components["schemas"]["CourseAdvice"][];
+            /** Suggestions */
+            suggestions: string[];
+            /** Warnings */
+            warnings: string[];
+            /**
+             * Disclaimer
+             * @default Saran ini bukan pengganti dosen wali atau aturan KRS kampusmu. Cek lagi jadwal resmi dan prasyarat sebelum mengisi KRS.
+             */
+            disclaimer: string;
+        };
+        /** KrsRequest */
+        KrsRequest: {
+            /** Target Credits */
+            target_credits?: number | null;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+        };
+        /** KrsStatus */
+        KrsStatus: {
+            /** Ai Enabled */
+            ai_enabled: boolean;
+            /** Model */
+            model: string | null;
         };
         /**
          * Language
@@ -905,6 +1047,8 @@ export interface components {
             course_code: string;
             /** Course Name */
             course_name: string;
+            /** Course Credits */
+            course_credits: number;
             /** Title */
             title: string;
             /** Description */
@@ -928,7 +1072,7 @@ export interface components {
              * Format: date-time
              */
             expires_at: string;
-            creator: components["schemas"]["UserBrief"];
+            creator: components["schemas"]["CreatorBrief"];
             /** Members Preview */
             members_preview: components["schemas"]["UserBrief"][];
             /** Is Member */
@@ -1219,6 +1363,18 @@ export interface components {
             /** Display Name */
             display_name: string;
         };
+        /**
+         * RegisterOut
+         * @description `signed_in` is true when email verification is switched off.
+         */
+        RegisterOut: {
+            /** Signed In */
+            signed_in: boolean;
+            /** Access Token */
+            access_token?: string | null;
+            /** Expires In */
+            expires_in?: number | null;
+        };
         /** ReportIn */
         ReportIn: {
             target_type: components["schemas"]["ReportTarget"];
@@ -1415,7 +1571,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Ok"];
+                    "application/json": components["schemas"]["RegisterOut"];
                 };
             };
             /** @description Validation Error */
@@ -1955,6 +2111,41 @@ export interface operations {
     list_recommended_lobbies: {
         parameters: {
             query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LobbyOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discover_lobbies: {
+        parameters: {
+            query?: {
+                q?: string;
+                faculty?: string;
+                has_slot?: boolean;
+                sort?: "match" | "newest" | "popular";
                 limit?: number;
             };
             header?: never;
@@ -2901,6 +3092,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Ok"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    krs_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KrsStatus"];
+                };
+            };
+        };
+    };
+    analyze_krs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KrsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KrsAnalysis"];
                 };
             };
             /** @description Validation Error */

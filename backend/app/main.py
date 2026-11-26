@@ -23,6 +23,7 @@ from app.routers import (
     auth,
     connections,
     courses,
+    krs,
     lobbies,
     messages,
     moderation,
@@ -88,6 +89,7 @@ def create_app() -> FastAPI:
         notifications,
         admin,
         usability,
+        krs,
     )
     for module in modules:
         app.include_router(module.router, prefix="/api/v1")

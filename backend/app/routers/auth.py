@@ -12,12 +12,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.deps import ClockDep, CurrentUser, Db, client_ip, ensure_usable, unauthorized
 from app.enums import UserStatus
-from app.errors import AppError, invalid
+from app.errors import AppError, conflict, invalid
 from app.mailer import Mailer, get_mailer
 from app.models import RefreshToken, User
 from app.moderation import ensure_clean
 from app.ratelimit import limiter
-from app.schemas import EmailIn, LoginIn, MeOut, Ok, RegisterIn, TokenOut, VerifyIn, WsTokenOut
+from app.schemas import (
+    EmailIn,
+    LoginIn,
+    MeOut,
+    Ok,
+    RegisterIn,
+    RegisterOut,
+    TokenOut,
+    VerifyIn,
+    WsTokenOut,
+)
 from app.security import (
     DUMMY_HASH,
     create_token,
@@ -86,17 +96,47 @@ async def _send_verification(mailer: Mailer, user: User, now: datetime) -> None:
 
 @router.post("/register", status_code=202)
 async def register(
-    body: RegisterIn, request: Request, db: Db, clock: ClockDep, mailer: MailerDep
-) -> Ok:
-    """Always 202: the response never reveals whether an address is registered."""
+    body: RegisterIn,
+    request: Request,
+    response: Response,
+    db: Db,
+    clock: ClockDep,
+    mailer: MailerDep,
+) -> RegisterOut:
+    """With verification on, always 202 and never reveals whether an address exists.
+
+    With verification off the account is signed in at once; an existing address is a 409
+    (there is no mailbox to send a hint to, and taking over accounts must stay impossible).
+    """
     s = get_settings()
     limiter.check(f"register:{client_ip(request)}", s.register_rate)
     email = body.email.lower()
-    if email.rsplit("@", 1)[1] not in s.email_domains:
+    if not s.email_allowed(email):
         raise invalid("email_domain", "Gunakan email kampusmu yang terdaftar, ya.")
     ensure_clean(body.display_name)
     password_hash = hash_password(body.password)
     existing = await db.scalar(select(User).where(User.email == email))
+    if not s.email_verification:
+        if existing is not None:
+            raise conflict("email_taken", "Email ini sudah terdaftar. Silakan masuk.")
+        now = clock.now()
+        user = User(
+            email=email,
+            password_hash=password_hash,
+            display_name=body.display_name,
+            email_verified_at=now,
+        )
+        db.add(user)
+        try:
+            await db.flush()
+        except IntegrityError as error:
+            raise conflict("email_taken", "Email ini sudah terdaftar. Silakan masuk.") from error
+        _set_cookie(response, _issue_refresh(db, user.id, now))
+        await db.commit()
+        token = _token_out(user.id, now)
+        return RegisterOut(
+            signed_in=True, access_token=token.access_token, expires_in=token.expires_in
+        )
     if existing is None:
         user = User(email=email, password_hash=password_hash, display_name=body.display_name)
         db.add(user)
@@ -104,7 +144,7 @@ async def register(
             await db.commit()
         except IntegrityError:  # concurrent registration of the same address
             await db.rollback()
-            return Ok()
+            return RegisterOut(signed_in=False)
         await _send_verification(mailer, user, clock.now())
     elif existing.email_verified_at is None:
         # Never overwrite the stored password: that would let someone who does not own the
@@ -116,7 +156,7 @@ async def register(
             "Kamu sudah punya akun SeekMate",
             f"Emailmu sudah terdaftar. Masuk di {s.frontend_url}/masuk",
         )
-    return Ok()
+    return RegisterOut(signed_in=False)
 
 
 @router.post("/resend-verification", status_code=202)

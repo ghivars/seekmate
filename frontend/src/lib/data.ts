@@ -3,7 +3,16 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { api, call } from "./api/client";
-import type { Connection, Course, Lobby, LobbyFilters, LobbyInput, Report, ReportInput } from "./types";
+import type {
+  Connection,
+  Course,
+  DiscoverSort,
+  Lobby,
+  LobbyFilters,
+  LobbyInput,
+  Report,
+  ReportInput,
+} from "./types";
 
 export type * from "./types";
 
@@ -77,6 +86,22 @@ export const useCourseLobbies = (courseId: string, filters: LobbyFilters = {}) =
           params: { path: { course_id: courseId }, query: filters },
         }),
       ),
+    placeholderData: (previous) => previous,
+    refetchInterval: POLL,
+  });
+
+export interface DiscoverParams {
+  q?: string;
+  faculty?: string;
+  has_slot?: boolean;
+  sort?: DiscoverSort;
+  limit?: number;
+}
+
+export const useDiscoverLobbies = (params: DiscoverParams) =>
+  useQuery({
+    queryKey: ["lobbies", "discover", params],
+    queryFn: () => call(api.GET("/api/v1/lobbies/discover", { params: { query: params } })),
     placeholderData: (previous) => previous,
     refetchInterval: POLL,
   });
@@ -254,6 +279,17 @@ export function useMarkNotificationsRead() {
     onSettled: () => void client.invalidateQueries({ queryKey: ["notifications"] }),
   });
 }
+
+// --- KRS analysis ----------------------------------------------------------
+
+export const useKrsStatus = () =>
+  useQuery({ queryKey: ["krs", "status"], queryFn: () => call(api.GET("/api/v1/krs/status")) });
+
+export const useAnalyzeKrs = () =>
+  useMutation({
+    mutationFn: (body: { target_credits: number | null; notes: string }) =>
+      call(api.POST("/api/v1/krs/analyze", { body })),
+  });
 
 // --- Admin -----------------------------------------------------------------
 

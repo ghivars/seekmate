@@ -58,7 +58,7 @@ function SlideOver(props: Props) {
       }}
       className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-[min(82vw,300px)] animate-[drawer-right_180ms] overflow-y-auto border-l border-line bg-side p-0 shadow-2xl backdrop:animate-[fade-in_160ms]"
     >
-      <div className="flex h-13 items-center justify-between border-b border-line pr-2 pl-4 font-semibold">
+      <div className="flex h-15 items-center justify-between border-b border-line pr-2 pl-4 font-semibold">
         Anggota
         <IconButton label="Tutup daftar anggota" onClick={() => setMembersOpen(false)}>
           <X size={18} />

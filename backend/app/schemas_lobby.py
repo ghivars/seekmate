@@ -46,6 +46,7 @@ class CourseOut(BaseModel):
     is_sample: bool
     is_planned: bool
     lobby_count: int
+    planner_count: int
     unread_count: int
 
 
@@ -68,11 +69,17 @@ class LobbyPatch(BaseModel):
     visibility: LobbyVisibility | None = None
 
 
+class CreatorBrief(UserBrief):
+    major: str
+    cohort_year: int | None
+
+
 class LobbyOut(BaseModel):
     id: uuid.UUID
     course_id: uuid.UUID
     course_code: str
     course_name: str
+    course_credits: int
     title: str
     description: str
     study_goal: StudyGoal
@@ -84,7 +91,7 @@ class LobbyOut(BaseModel):
     status: LobbyStatus
     created_at: datetime
     expires_at: datetime
-    creator: UserBrief
+    creator: CreatorBrief
     members_preview: list[UserBrief]
     is_member: bool
     my_role: MemberRole | None

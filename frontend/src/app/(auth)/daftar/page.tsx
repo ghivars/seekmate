@@ -8,6 +8,7 @@ import { AuthCard, useRedirectIfAuthenticated } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
 import { FormError, TextField } from "@/components/ui/field";
 import { api, call } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth";
 import { useZodForm } from "@/lib/use-zod-form";
 
 const schema = z.object({
@@ -21,8 +22,14 @@ export default function RegisterPage() {
   const form = useZodForm(schema, { display_name: "", email: "", password: "" });
   const [sentTo, setSentTo] = useState<string | null>(null);
 
+  const { acceptToken } = useAuth();
   const onSubmit = form.submit(async (body) => {
-    await call(api.POST("/api/v1/auth/register", { body }));
+    const result = await call(api.POST("/api/v1/auth/register", { body }));
+    if (result.signed_in && result.access_token) {
+      // Verification is off on this server: straight to onboarding.
+      await acceptToken(result.access_token);
+      return;
+    }
     setSentTo(body.email);
   });
 

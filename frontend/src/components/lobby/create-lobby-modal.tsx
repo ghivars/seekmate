@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { FormError, OptionGroup, TextArea, TextField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import { useMe } from "@/lib/auth";
-import { useCourse, useCreateLobby } from "@/lib/data";
+import { celebrate } from "@/lib/celebrate";
+import { useCourse, useCourseSearch, useCreateLobby } from "@/lib/data";
 import { ATMOSPHERES, STUDY_GOALS, TIMES } from "@/lib/labels";
 import { useZodForm } from "@/lib/use-zod-form";
 import { LobbyCardBody } from "./lobby-card";
@@ -26,14 +27,17 @@ const STEP_TITLES = ["Judul dan deskripsi", "Tujuan, suasana, waktu", "Kapasitas
 export function CreateLobbyModal({ courseId, onClose }: { courseId: string | null; onClose: () => void }) {
   return (
     <Modal open={courseId !== null} onClose={onClose} title="Buat Lobby" subtitle="Boleh sendiri dulu, teman menyusul." wide>
-      {courseId && <Wizard courseId={courseId} onClose={onClose} />}
+      {courseId !== null && <Wizard initialCourse={courseId} onClose={onClose} />}
     </Modal>
   );
 }
 
-function Wizard({ courseId, onClose }: { courseId: string; onClose: () => void }) {
+function Wizard({ initialCourse, onClose }: { initialCourse: string; onClose: () => void }) {
   const me = useMe();
   const router = useRouter();
+  const all = useCourseSearch("");
+  const [picked, setPicked] = useState(initialCourse);
+  const courseId = picked || all.data?.find((c) => c.is_planned)?.id || all.data?.[0]?.id || "";
   const course = useCourse(courseId);
   const create = useCreateLobby();
   const [step, setStep] = useState(0);
@@ -58,6 +62,7 @@ function Wizard({ courseId, onClose }: { courseId: string; onClose: () => void }
 
   const submit = form.submit(async (data) => {
     const lobby = await create.mutateAsync({ courseId, body: data });
+    celebrate();
     onClose();
     router.push(`/c/${courseId}/${lobby.id}`);
   });
@@ -85,6 +90,25 @@ function Wizard({ courseId, onClose }: { courseId: string; onClose: () => void }
         </div>
         {step === 0 && (
           <>
+            {!initialCourse && (
+              <div className="space-y-1.5">
+                <label htmlFor="lobby-course" className="block text-sm font-medium">
+                  Mata kuliah
+                </label>
+                <select
+                  id="lobby-course"
+                  value={courseId}
+                  onChange={(e) => setPicked(e.target.value)}
+                  className="h-11 w-full rounded-lg border border-line bg-app px-3 text-[16px] sm:text-[15px]"
+                >
+                  {all.data?.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.code} · {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <TextField
               label="Judul lobby"
               data-autofocus

@@ -31,6 +31,17 @@ class Settings(BaseSettings):
     allow_insecure_http: bool = False
     # console: verification links go to the server log (no SMTP configured yet).
     mail_mode: str = "console"
+    # false: accounts are usable right after sign-up (no link). Email ownership is then
+    # NOT proven, only the domain allowlist applies.
+    email_verification: bool = True
+
+    # KRS analysis through any OpenAI-compatible endpoint (Gemini and Groq free tiers).
+    # Empty key = rule-based analysis only.
+    ai_api_key: str = ""
+    ai_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
+    ai_model: str = "gemini-flash-latest"
+    ai_timeout_seconds: float = 25.0
+    krs_rate: str = "6/600"
 
     rate_limit_enabled: bool = True
     login_rate: str = "10/300"  # attempts / seconds
@@ -83,6 +94,11 @@ class Settings(BaseSettings):
     @property
     def email_domains(self) -> list[str]:
         return self._split(self.allowed_email_domains)
+
+    def email_allowed(self, email: str) -> bool:
+        """`ac.id` allows `ui.ac.id` and `student.itb.ac.id`; exact names still work."""
+        domain = email.rsplit("@", 1)[-1].lower()
+        return any(domain == d or domain.endswith(f".{d}") for d in self.email_domains)
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -95,6 +95,20 @@ See [.env.example](.env.example) for the full list.
 | `NEXT_PUBLIC_WS_URL` | WebSocket base the browser uses (build time) |
 | `USABILITY_TEST_MODE`, `NEXT_PUBLIC_USABILITY_TEST` | Anonymous usability metrics, off by default |
 
+## KRS analysis
+
+`/krs` analyses the planned courses (total SKS, load, lobbies per course, tips). It always works
+with built-in rules. Set `AI_API_KEY` (plus `AI_BASE_URL` and `AI_MODEL`) to let any
+OpenAI-compatible model write the summary and tips; Gemini (Google AI Studio) and Groq both offer
+free keys. Only course codes, names, SKS, lobby counts, preferences and the optional note are sent,
+never names or emails. If the call fails the rule-based result is returned.
+
+## Sign-up without verification
+
+`EMAIL_VERIFICATION=false` signs people in right after sign-up. The domain allowlist still applies
+(`ALLOWED_EMAIL_DOMAINS=ac.id` accepts every `*.ac.id` campus) but nobody proves they own the
+address. Turn verification back on once a real mailer exists.
+
 ## Usability-test mode
 
 When both flags are on, the app records `time_to_first_join`, `join` and `first_message` with a

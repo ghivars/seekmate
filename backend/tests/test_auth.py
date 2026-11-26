@@ -121,7 +121,7 @@ async def test_register_rejects_other_domains_and_never_leaks_accounts(
     assert (bad.status_code, bad.json()["code"]) == (422, "email_domain")
     user = await make_user(db)
     again = await client.post(f"{API}/auth/register", json={**CREDS, "email": user.email})
-    assert (again.status_code, again.json()) == (202, {"ok": True})
+    assert (again.status_code, again.json()["signed_in"]) == (202, False)
     assert "token=" not in mail.sent[-1][2]
 
 

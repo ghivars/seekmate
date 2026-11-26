@@ -1,12 +1,12 @@
 "use client";
 
-import { Compass, Plus } from "lucide-react";
+import { Compass, Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { ConnectionList, PendingConnections } from "@/components/connections";
 import { JoinSheet } from "@/components/lobby/join-sheet";
 import { LobbyCard } from "@/components/lobby/lobby-card";
-import { Page, Section } from "@/components/shell/page";
+import { HeroGlow, Page, Section } from "@/components/shell/page";
 import { useShell } from "@/components/shell/shell-context";
 import { buttonClass, Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/states";
@@ -30,11 +30,35 @@ export default function HomePage() {
   const me = useMe();
   const [joining, setJoining] = useState<Lobby | null>(null);
   return (
-    <Page title="Beranda">
+    <Page title="Beranda" wide>
+      <div className="relative isolate mb-10 grid gap-4 px-1 py-4 lg:grid-cols-[1fr_360px] lg:items-center">
+        <HeroGlow />
+        <div>
+          <p className="label-mono text-amber">Selamat datang kembali</p>
+          <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
+            Halo, {me.display_name.split(" ")[0]}{" "}
+            <span aria-hidden className="inline-block origin-[70%_70%] animate-[wave_2.4s_ease-in-out_infinite]">
+              👋
+            </span>
+          </h2>
+          <p className="mt-3 max-w-xl text-muted">Siap cari teman belajar hari ini? Ini rangkuman ruang belajarmu.</p>
+        </div>
+        <Link
+          href="/krs"
+          className="group ease-ui flex items-center gap-4 rounded-2xl border border-amber/40 bg-raised p-5 transition-[translate,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-20px_var(--glow)]"
+        >
+          <span aria-hidden className="text-4xl">🧠</span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg font-bold">Analisis KRS</span>
+            <span className="block text-sm text-muted">Cek beban SKS dan dapat saran sebelum submit.</span>
+          </span>
+          <Sparkles size={20} className="text-amber transition-transform group-hover:rotate-12" aria-hidden />
+        </Link>
+      </div>
       <PendingConnections />
       <Courses />
       <MyLobbies />
-      <Section title="Rekomendasi lobby">
+      <Section title="Rekomendasi lobby" tone="amber">
         {me.preferences === null && (
           <p className="mb-4 rounded-xl border border-line bg-raised px-4 py-3 text-sm">
             Lengkapi preferensi supaya rekomendasi diurutkan berdasarkan kecocokan.{" "}

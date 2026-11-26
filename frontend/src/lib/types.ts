@@ -14,6 +14,8 @@ export type Report = Schemas["ReportOut"];
 export type ReportInput = Schemas["ReportIn"];
 export type AppNotification = Schemas["NotificationOut"];
 export type Semester = Schemas["SemesterOut"];
+export type KrsAnalysis = Schemas["KrsAnalysis"];
+export type DiscoverSort = "match" | "newest" | "popular";
 
 /** A message plus client-only delivery state for optimistic sends. */
 export interface ChatMessage extends Message {

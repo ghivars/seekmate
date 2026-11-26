@@ -42,7 +42,7 @@ export function CourseSidebar({ courseId }: { courseId: string }) {
 
   return (
     <>
-      <div className="flex h-13 shrink-0 items-center border-b border-line px-2">
+      <div className="flex h-15 shrink-0 items-center border-b border-line px-2">
         <Popover
           label="Menu mata kuliah"
           className="w-56"

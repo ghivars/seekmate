@@ -59,6 +59,14 @@ class TokenOut(BaseModel):
     expires_in: int
 
 
+class RegisterOut(BaseModel):
+    """`signed_in` is true when email verification is switched off."""
+
+    signed_in: bool
+    access_token: str | None = None
+    expires_in: int | None = None
+
+
 class WsTokenOut(BaseModel):
     token: str
     expires_in: int

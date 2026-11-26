@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 import { useJoinLobby, type Lobby } from "@/lib/data";
 import { buildIntro, EXTRA_PHRASES, GOAL_PHRASES, swapGoal, toggleExtra } from "@/lib/intro";
 import { STUDY_GOALS } from "@/lib/labels";
+import { celebrate } from "@/lib/celebrate";
 import { logUsability } from "@/lib/usability";
 
 const MAX = 1000;
@@ -48,6 +49,7 @@ function Sheet({ lobby, onClose }: { lobby: Lobby; onClose: () => void }) {
       await join.mutateAsync({ lobbyId: lobby.id, intro: text.trim() });
       logUsability("time_to_first_join");
       logUsability("join");
+      celebrate();
     } catch (e) {
       // Joined from another tab in the meantime: just open the lobby.
       if (!(e instanceof ApiError && e.code === "already_member")) {
