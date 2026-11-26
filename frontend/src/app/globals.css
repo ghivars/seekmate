@@ -1,0 +1,146 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@custom-variant dark (&:where([data-theme="dark"] *));
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --app: #14161f;
+  --rail: #0e1017;
+  --side: #191c28;
+  --main: #1e2230;
+  --raised: #262b3c;
+  --line: #2e3448;
+  --fg: #e8ebf5;
+  --muted: #9aa3bc;
+  --primary: #5b8def;
+  --on-primary: #0b1020;
+  --link: #7fa8f5;
+  --mint: #3dd6a0;
+  --amber: #f5b544;
+  --danger: #f5737e;
+  --on-danger: #1d0508;
+  --danger-fill: #f0616d;
+  --shade: rgb(0 0 0 / 0.6);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --app: #f7f8fc;
+  --rail: #e9edf6;
+  --side: #f1f3f9;
+  --main: #ffffff;
+  --raised: #ffffff;
+  --line: #e3e7f0;
+  --fg: #1d2433;
+  --muted: #566076;
+  --primary: #2c5fc7;
+  --on-primary: #ffffff;
+  --link: #2c5fc7;
+  --mint: #0a7150;
+  --amber: #855400;
+  --danger: #b92c3a;
+  --on-danger: #ffffff;
+  --danger-fill: #b92c3a;
+  --shade: rgb(20 24 40 / 0.45);
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-app: var(--app);
+  --color-rail: var(--rail);
+  --color-side: var(--side);
+  --color-main: var(--main);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-link: var(--link);
+  --color-mint: var(--mint);
+  --color-amber: var(--amber);
+  --color-danger: var(--danger);
+  --color-danger-fill: var(--danger-fill);
+  --color-on-danger: var(--on-danger);
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+  body {
+    background: var(--app);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  button,
+  [role="button"],
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  :focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
+  }
+  [data-switching] * {
+    transition: none !important;
+  }
+  dialog {
+    color: inherit;
+  }
+  dialog::backdrop {
+    background: var(--shade);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+}
+
+@utility ease-ui {
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes drawer-left {
+  from {
+    translate: -100% 0;
+  }
+}
+@keyframes drawer-right {
+  from {
+    translate: 100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

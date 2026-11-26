@@ -1,0 +1,43 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: backend } }
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: seekmate, POSTGRES_PASSWORD: seekmate, POSTGRES_DB: seekmate_test }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U seekmate -d seekmate_test" --health-interval 3s
+          --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://seekmate:seekmate@localhost:5432/seekmate_test
+      DATABASE_URL: postgresql+asyncpg://seekmate:seekmate@localhost:5432/seekmate_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - run: uv run ruff check . && uv run ruff format --check .
+      - run: uv run pytest -q
+      - run: uv run alembic check
+      - name: OpenAPI client input is up to date
+        run: uv run python -m app.export_openapi /tmp/openapi.json && diff /tmp/openapi.json ../frontend/openapi.json
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npm run gen:api && git diff --exit-code src/lib/api/schema.d.ts
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

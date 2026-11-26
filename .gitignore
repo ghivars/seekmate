@@ -1,0 +1,12 @@
+.env
+.env.local
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+backend/.pgdata*
+.claude/
