@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     ws_token_seconds: int = 60
     verify_token_hours: int = 24
     cookie_secure: bool = False
+    # Production over plain HTTP (no domain, no TLS). Weakens cookie protection.
+    allow_insecure_http: bool = False
+    # console: verification links go to the server log (no SMTP configured yet).
+    mail_mode: str = "console"
 
     rate_limit_enabled: bool = True
     login_rate: str = "10/300"  # attempts / seconds
@@ -58,7 +62,7 @@ class Settings(BaseSettings):
         if self.environment == "production":
             if self.secret_key == DEV_SECRET or len(self.secret_key) < 32:
                 raise ValueError("SECRET_KEY must be a unique value of 32+ characters")
-            if not self.cookie_secure:
+            if not self.cookie_secure and not self.allow_insecure_http:
                 raise ValueError("COOKIE_SECURE must be true in production")
         return self
 

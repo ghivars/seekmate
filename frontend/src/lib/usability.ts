@@ -1,4 +1,5 @@
 import { api } from "./api/client";
+import { uuid } from "./uuid";
 
 type EventName = "time_to_first_join" | "join" | "first_message";
 
@@ -14,7 +15,7 @@ interface Session {
 function session(): Session {
   const stored = sessionStorage.getItem(KEY);
   if (stored) return JSON.parse(stored) as Session;
-  return { key: crypto.randomUUID(), startedAt: Date.now(), sent: [] };
+  return { key: uuid(), startedAt: Date.now(), sent: [] };
 }
 
 /** Starts the per-tab clock used by "time to first join". */

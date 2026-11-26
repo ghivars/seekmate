@@ -16,8 +16,10 @@ class Mailer(Protocol):
 
 class ConsoleMailer:
     async def send(self, to: str, subject: str, body: str) -> None:
-        if get_settings().environment == "production":
-            log.error("No production mailer configured; a message was not sent.")
+        if get_settings().mail_mode != "console":
+            log.error(
+                "Mail mode %s is not implemented; a message was not sent.", get_settings().mail_mode
+            )
             return
         log.info("\n--- EMAIL (dev) ---\nTo: %s\nSubject: %s\n\n%s\n---", to, subject, body)
 

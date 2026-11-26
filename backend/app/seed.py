@@ -6,6 +6,7 @@ Run with `python -m app.seed`. Nothing here represents real courses, people or s
 from __future__ import annotations
 
 import asyncio
+import sys
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -199,7 +200,7 @@ def sid(name: str) -> uuid.UUID:
     return uuid.uuid5(NAMESPACE, name)
 
 
-async def seed(session: AsyncSession, now: datetime) -> None:
+async def seed(session: AsyncSession, now: datetime, demo: bool = True) -> None:
     semester = await session.scalar(select(Semester).where(Semester.is_active))
     if semester is None:
         semester = Semester(
@@ -223,6 +224,9 @@ async def seed(session: AsyncSession, now: datetime) -> None:
                 )
             )
     await session.flush()
+    if not demo:
+        await session.commit()
+        return
 
     password_hash = hash_password(DEMO_PASSWORD)
     admin = ("admin", "Admin (demo)", "", None, False, "Akun demo admin.", None)
@@ -306,12 +310,14 @@ async def seed(session: AsyncSession, now: datetime) -> None:
 
 
 async def main() -> None:
-    if get_settings().environment == "production":
-        raise SystemExit("Refusing to seed demo data in production.")
+    """`--courses-only` loads the sample semester and courses without any demo account."""
+    demo = "--courses-only" not in sys.argv
+    if demo and get_settings().environment == "production":
+        raise SystemExit("Refusing to seed demo accounts in production (use --courses-only).")
     async with SessionFactory() as session:
-        await seed(session, datetime.now(UTC))
+        await seed(session, datetime.now(UTC), demo=demo)
     await engine.dispose()
-    print("Seed done (sample courses and demo accounts).")
+    print("Seed done (sample courses and demo accounts)." if demo else "Seed done (courses).")
 
 
 if __name__ == "__main__":

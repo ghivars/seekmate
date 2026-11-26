@@ -7,6 +7,7 @@ import { flatten, removeMessage, upsertMessage, type History } from "./chat-cach
 import { invalidateLobby } from "./data";
 import { LobbySocket, type ServerEvent, type SocketStatus } from "./lobby-socket";
 import { logUsability } from "./usability";
+import { uuid } from "./uuid";
 import type { ChatMessage, Lobby, Member, UserBrief } from "./types";
 
 const SEND_TIMEOUT_MS = 10_000;
@@ -145,8 +146,8 @@ export function useLobbyChat(lobby: Lobby, me: UserBrief) {
 
   const send = (body: string) => {
     const message: ChatMessage = {
-      id: crypto.randomUUID(),
-      client_id: crypto.randomUUID(),
+      id: uuid(),
+      client_id: uuid(),
       lobby_id: lobbyId,
       sender: { id: me.id, display_name: me.display_name },
       body,
