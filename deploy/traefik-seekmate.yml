@@ -1,0 +1,12 @@
+# Copy to /etc/dokploy/traefik/dynamic/seekmate.yml. Serves SeekMate on the bare IP over HTTP.
+http:
+  routers:
+    seekmate:
+      rule: Host(`72.61.214.92`)
+      entryPoints: [web]
+      service: seekmate
+  services:
+    seekmate:
+      loadBalancer:
+        servers:
+          - url: http://seekmate-gateway-1:80

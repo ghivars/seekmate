@@ -1,4 +1,4 @@
-# Production stack for a single VPS without a domain: http://<IP>:<PORT>.
+# Production stack for a single VPS without a domain: http://<IP>/ via the host's Traefik.
 # Usage (from the repo root on the server):
 #   docker compose -p seekmate -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build
 # Only the gateway publishes a port; Postgres and the API stay on the private network.
@@ -52,10 +52,15 @@ services:
   gateway:
     image: nginx:1.27-alpine
     restart: unless-stopped
-    ports: ["${PUBLIC_PORT:-8090}:80"]
+    # Reached through the host's Traefik (Dokploy) on port 80; see deploy/traefik-seekmate.yml.
+    networks: [default, dokploy-network]
     volumes: ["./nginx.conf:/etc/nginx/conf.d/default.conf:ro"]
     depends_on: [frontend, backend]
     mem_limit: 64m
 
 volumes:
   pgdata:
+
+networks:
+  dokploy-network:
+    external: true
