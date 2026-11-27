@@ -10,7 +10,7 @@ export function DoodleArt() {
   const id = useId().replace(/:/g, "");
   const line = { stroke: INK, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-3xl">
+    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[inherit]">
       <div className="absolute inset-0 bg-[linear-gradient(135deg,#ffe788_0%,#ffd84d_55%,#ffc83a_100%)]" />
       <svg className="absolute inset-0 size-full" xmlns="http://www.w3.org/2000/svg">
         <defs>

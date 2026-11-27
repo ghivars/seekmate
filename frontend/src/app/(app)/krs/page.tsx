@@ -41,7 +41,7 @@ export default function KrsPage() {
 
   return (
     <Page title="Analisis KRS" badge={aiOn ? "AI aktif" : "mode dasar"} wide>
-      <div className="doodle-hero relative isolate mb-8 rounded-3xl p-6 sm:p-10">
+      <div className="doodle-hero relative isolate mb-8 -mx-4 -mt-6 rounded-b-3xl px-6 py-8 sm:-mx-8 sm:px-10 sm:py-10">
         <HeroGlow />
         <p className="label-mono flex items-center gap-2 text-amber">
           <Sparkles size={13} aria-hidden /> Asisten rencana studi
