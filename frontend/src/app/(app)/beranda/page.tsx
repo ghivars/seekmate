@@ -31,7 +31,7 @@ export default function HomePage() {
   const [joining, setJoining] = useState<Lobby | null>(null);
   return (
     <Page title="Beranda" wide>
-      <div className="relative isolate mb-10 grid gap-4 px-1 py-4 lg:grid-cols-[1fr_360px] lg:items-center">
+      <div className="doodle-hero relative isolate mb-10 grid gap-6 rounded-3xl p-6 sm:p-10 lg:grid-cols-[1fr_380px] lg:items-center">
         <HeroGlow />
         <div>
           <p className="label-mono text-amber">Selamat datang kembali</p>

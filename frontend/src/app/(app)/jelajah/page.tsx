@@ -51,9 +51,9 @@ export default function DiscoverPage() {
 
   return (
     <Page title="Jelajah Lobby Belajar" badge={`${activeCount} lobby aktif`} wide>
-      <div className="relative isolate mb-8">
+      <div className="doodle-hero relative isolate mb-8 rounded-3xl p-6 sm:p-10">
         <HeroGlow />
-        <div className="flex flex-wrap items-end gap-6 px-1 py-4">
+        <div className="flex flex-wrap items-end gap-6">
           <div className="min-w-0 flex-1">
             <p className="label-mono flex items-center gap-2 text-amber">
               <LiveDot tone="amber" /> {semester.data?.name ?? "Semester aktif"}

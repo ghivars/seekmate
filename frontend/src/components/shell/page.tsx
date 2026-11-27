@@ -2,6 +2,7 @@
 
 import { Menu, Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { DoodleArt } from "@/components/doodle-art";
 import { Avatar } from "@/components/ui/avatar";
 import { IconButton } from "@/components/ui/button";
 import { useMe } from "@/lib/auth";
@@ -105,13 +106,7 @@ export function Section({
   );
 }
 
-/** Decorative glow for hero areas. */
+/** Yellow doodle ground for hero areas (use inside a `.doodle-hero` container). */
 export function HeroGlow() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-3xl">
-      <div className="absolute -top-24 -left-16 size-72 rounded-full bg-primary/25 blur-3xl" />
-      <div className="absolute -right-10 -bottom-28 size-72 rounded-full bg-amber/15 blur-3xl" />
-      <div className="absolute top-10 right-1/3 size-40 rounded-full bg-mint/10 blur-3xl" />
-    </div>
-  );
+  return <DoodleArt />;
 }
