@@ -1,11 +1,14 @@
 "use client";
 
-import { Menu, Search } from "lucide-react";
+import { Bell, Menu, Search } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { DoodleArt } from "@/components/doodle-art";
 import { Avatar } from "@/components/ui/avatar";
 import { IconButton } from "@/components/ui/button";
+import { CountBadge } from "@/components/ui/tag";
 import { useMe } from "@/lib/auth";
+import { useUnreadNotifications } from "@/lib/data";
 import { cn } from "@/lib/cn";
 import { useShell } from "./shell-context";
 
@@ -38,6 +41,23 @@ function SearchPill() {
   );
 }
 
+function BellLink() {
+  const unread = useUnreadNotifications();
+  return (
+    <Link
+      href="/notifikasi"
+      aria-label={unread > 0 ? `Notifikasi, ${unread} belum dibaca` : "Notifikasi"}
+      title="Notifikasi"
+      className="relative inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-fg max-sm:hidden"
+    >
+      <Bell size={18} aria-hidden />
+      <span className="absolute -top-0.5 -right-0.5" aria-hidden>
+        <CountBadge count={unread} label="belum dibaca" />
+      </span>
+    </Link>
+  );
+}
+
 interface PageProps {
   title: ReactNode;
   badge?: ReactNode;
@@ -62,6 +82,7 @@ export function Page({ title, badge, actions, children, wide }: PageProps) {
         <span className="flex-1" />
         <SearchPill />
         {actions}
+        <BellLink />
         <span className="max-sm:hidden" title={me.display_name}>
           <Avatar id={me.id} name={me.display_name} size="sm" online />
         </span>
